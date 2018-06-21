@@ -8,8 +8,41 @@ import os
 import csv
 from time import time
 import numpy as np
+import matplotlib.pyplot as plt
+import itertools
 
 from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, accuracy_score, confusion_matrix, f1_score
+from sklearn.preprocessing import LabelEncoder
+
+
+def plot_confusion_matrix(cm, classes,
+                          title='Confusion matrix',
+                          cmap=plt.cm.Greens):
+    """
+    This function prints and plots the confusion matrix.
+    Normalization can be applied by setting `normalize=True`.
+    """
+
+    plt.imshow(cm, interpolation='nearest', cmap=cmap)
+    plt.title(title)
+    plt.colorbar()
+    tick_marks = np.arange(len(classes))
+    plt.xticks(tick_marks, classes, rotation=45, horizontalalignment="right",)
+    plt.yticks(tick_marks, classes)
+
+    fmt = '.2f'
+    thresh = cm.max() / 2.
+    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+        plt.text(j, i, format(cm[i, j], fmt),
+                 horizontalalignment="center",
+                 fontsize="smaller",
+                 color="white" if cm[i, j] > thresh else "black")
+
+    plt.tight_layout()
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
 
 
 if __name__ == '__main__':
@@ -18,7 +51,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Million Song Dataset Genre Classification')
     parser.add_argument('-i', '--input', type=str, help='Input data path',
                         default="data/MSD_genre/msd_genre_dataset.csv")
-    parser.add_argument('-s', '-size', help='Train size in % relative to test set',
+    parser.add_argument('-s', '--size', help='Train size in % relative to test set',
                         default=0.8)
 
     args = vars(parser.parse_args())
@@ -40,8 +73,32 @@ if __name__ == '__main__':
     # Remove song info and split classes and data
     y, _, X = np.split(X, [1, 4], axis=1)
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=TRAIN_SIZE)
+    # encode labels
+    le = LabelEncoder()
+    le.fit(y)
 
+    # divide dataset
+    X_train, X_test, y_train, y_test = train_test_split(X, le.transform(y), train_size=TRAIN_SIZE)
 
+    # tribute to our biggest forest
+    amazon = RandomForestClassifier()
+    amazon.fit(X_train, y_train)
+    print(amazon.feature_importances_)
+
+    y_pred = amazon.predict(X_test)
+    print(classification_report(y_test, y_pred, target_names=le.classes_))
+
+    cmat = confusion_matrix(y_test, y_pred)
+    cmat = cmat.astype('float') / cmat.sum(axis=1)[:, np.newaxis]
+    np.set_printoptions(precision=2, suppress=True)
+    #print(le.classes_)
+    #print(cmat)
+    acc_per_class = cmat.diagonal() / cmat.sum(axis=1)
+    print("Accuracy on test set of %d samples: %f" % (len(y_test), accuracy_score(y_test, y_pred)))
+    print("Normalized Accuracy on test set: %f" % (np.mean(acc_per_class)))
+    print("F1 Score on test set: %f" % (f1_score(y_test, y_pred, average="macro")))
+    plt.figure()
+    plot_confusion_matrix(cmat, classes=le.classes_, title='Random Forest Confusion matrix')
+    plt.show()
 
     print("--- %s seconds ---" % (time() - start_time))
