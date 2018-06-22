@@ -15,7 +15,7 @@ from sklearn.model_selection import train_test_split, RepeatedStratifiedKFold, c
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix, f1_score
 from sklearn.preprocessing import LabelEncoder
-
+from imblearn import under_sampling
 
 def plot_confusion_matrix(cm, classes,
                           title='Confusion matrix',
@@ -76,15 +76,16 @@ if __name__ == '__main__':
     # encode labels
     le = LabelEncoder()
     le.fit(y)
-
+    y_transformed = le.transform(y)
     # divide dataset
-    X_train, X_test, y_train, y_test = train_test_split(X, le.transform(y), train_size=TRAIN_SIZE)
-
-    # Grid Search number of trees
+    under = under_sampling.RandomUnderSampler()
+    X, y_transformed = under.fit_sample(X, y_transformed)
+    X_train, X_test, y_train, y_test = train_test_split(X, y_transformed, train_size=TRAIN_SIZE)
 
     # tribute to our biggest forest
     amazon = RandomForestClassifier(max_features="sqrt")
 
+    # Grid Search number of trees
     # Range of `n_estimators` values to explore.
     n_features = X.shape[1]
     n_estim = list(range(10, min(2*n_features, 100), 2))
