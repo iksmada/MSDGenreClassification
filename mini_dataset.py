@@ -80,7 +80,7 @@ if __name__ == '__main__':
     # divide dataset
     under = under_sampling.RandomUnderSampler()
     X, y_transformed = under.fit_sample(X, y_transformed)
-    X_train, X_test, y_train, y_test = train_test_split(X, y_transformed, train_size=TRAIN_SIZE)
+    X_train, X_test, y_train, y_test = train_test_split(X, y_transformed, train_size=TRAIN_SIZE, stratify=y_transformed)
 
     # tribute to our biggest forest
     amazon = RandomForestClassifier(max_features="sqrt")
