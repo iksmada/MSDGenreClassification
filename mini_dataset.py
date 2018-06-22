@@ -15,7 +15,8 @@ from sklearn.model_selection import train_test_split, RepeatedStratifiedKFold, c
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix, f1_score
 from sklearn.preprocessing import LabelEncoder
-from imblearn import under_sampling
+from imblearn import under_sampling, combine
+
 
 def plot_confusion_matrix(cm, classes,
                           title='Confusion matrix',
@@ -77,9 +78,11 @@ if __name__ == '__main__':
     le = LabelEncoder()
     le.fit(y)
     y_transformed = le.transform(y)
+    # string to float
+    X = X.astype(float)
     # divide dataset
-    under = under_sampling.RandomUnderSampler()
-    X, y_transformed = under.fit_sample(X, y_transformed)
+    combination = combine.SMOTETomek(n_jobs=-1)
+    X, y_transformed = combination.fit_sample(X, y_transformed)
     X_train, X_test, y_train, y_test = train_test_split(X, y_transformed, train_size=TRAIN_SIZE, stratify=y_transformed)
 
     # tribute to our biggest forest
@@ -96,7 +99,7 @@ if __name__ == '__main__':
         amazon.set_params(n_estimators=i)
         # 5x2 cross-validation
         kfold = RepeatedStratifiedKFold(n_repeats=5, n_splits=2)
-        scores = cross_val_score(amazon, X_train, y_train, cv=kfold, scoring='accuracy')
+        scores = cross_val_score(amazon, X_train, y_train, cv=kfold, scoring='accuracy', n_jobs=-1)
         cv_scores.append(scores.mean())
 
     optimal_n_estim = n_estim[cv_scores.index(max(cv_scores))]
@@ -107,7 +110,7 @@ if __name__ == '__main__':
     plt.ylabel('Train Accuracy')
     plt.show()
 
-    amazon.set_params(n_estimators=optimal_n_estim)
+    amazon.set_params(n_estimators=optimal_n_estim, n_jobs=-1)
     amazon.fit(X_train, y_train)
     print(amazon.feature_importances_)
 
