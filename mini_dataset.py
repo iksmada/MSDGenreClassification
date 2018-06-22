@@ -11,7 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import itertools
 
-from sklearn.model_selection import train_test_split, KFold, cross_val_score
+from sklearn.model_selection import train_test_split, RepeatedStratifiedKFold, cross_val_score
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix, f1_score
 from sklearn.preprocessing import LabelEncoder
@@ -87,19 +87,16 @@ if __name__ == '__main__':
 
     # Range of `n_estimators` values to explore.
     n_features = X.shape[1]
-    n_estim = list(range(10, min(n_features, 100), 2))
+    n_estim = list(range(10, min(2*n_features, 100), 2))
 
     cv_scores = []
 
-    #5x2 cross-validation
     for i in n_estim:
         amazon.set_params(n_estimators=i)
-        kfold = KFold(n_splits=2, shuffle=True)
-        acc = []
-        for j in range(5):
-            scores = cross_val_score(amazon, X_train, y_train, cv=kfold, scoring='accuracy')
-            acc = acc + list(scores)
-        cv_scores.append(np.array(acc).mean())
+        # 5x2 cross-validation
+        kfold = RepeatedStratifiedKFold(n_repeats=5, n_splits=2)
+        scores = cross_val_score(amazon, X_train, y_train, cv=kfold, scoring='accuracy')
+        cv_scores.append(scores.mean())
 
     optimal_n_estim = n_estim[cv_scores.index(max(cv_scores))]
     print("The optimal number of estimators is %d with %0.1f%%" % (optimal_n_estim, max(cv_scores)*100))
