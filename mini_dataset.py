@@ -1,5 +1,5 @@
 #  use data/MSD_genre/msd_genre_dataset.txt as features
-# !/usr/bin/python3
+# !/usr/bin/python3 -W ignore::DeprecationWarning
 #  -*- coding: UTF-8 -*-
 
 import argparse
@@ -68,10 +68,9 @@ if __name__ == '__main__':
     TRAIN_SIZE = args['size']
 
     # Load data
-    X =[]
-    fieldnames = []
+    X = []
     with open(INPUT, newline='') as csvfile:
-        csvreader = csv.reader(filter(lambda row: row[0]!='#', csvfile))
+        csvreader = csv.reader(filter(lambda row: row[0] != '#', csvfile))
         fieldnames = next(csvreader)
         print(fieldnames)
         for row in csvreader:
@@ -79,7 +78,9 @@ if __name__ == '__main__':
     # Convert to numpy array
     X = np.array(X)
     # Remove song info and split classes and data
-    y, _, X = np.split(X, [1, 4], axis=1)
+    y, X = np.split(X, [1], axis=1)
+    # Remove irrelevant features
+    X = np.delete(X, [0, 1, 2, 8], 1)
 
     # encode labels
     le = LabelEncoder()
