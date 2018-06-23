@@ -82,10 +82,17 @@ if __name__ == '__main__':
     X = X.astype(float)
     # divide dataset
     X_train, X_test, y_train, y_test = train_test_split(X, y_transformed, train_size=TRAIN_SIZE, stratify=y_transformed)
+    print("Test set has %d samples" % len(y_test))
+    print("Train set has %d samples" % len(y_train))
+    _, counts = np.unique(y_train, return_counts=True)
+    print(counts)
 
     # Resample the train set
-    resampler = under_sampling.OneSidedSelection(n_jobs=-1)
+    resampler = under_sampling.NeighbourhoodCleaningRule(n_jobs=-1)
     X_train, y_train = resampler.fit_sample(X_train, y_train)
+    print("Resampled train set has %d samples" % len(y_train))
+    _, counts = np.unique(y_train, return_counts=True)
+    print(counts)
     # tribute to our biggest forest
     amazon = RandomForestClassifier(max_features="sqrt")
 
@@ -104,6 +111,7 @@ if __name__ == '__main__':
         scores = cross_val_score(amazon, X_train, y_train, cv=kfold, scoring='accuracy', n_jobs=-1)
         cv_scores.append(scores.mean())
 
+    print("")
     optimal_n_estim = n_estim[cv_scores.index(max(cv_scores))]
     print("The optimal number of estimators is %d with %0.1f%%" % (optimal_n_estim, max(cv_scores)*100))
 
