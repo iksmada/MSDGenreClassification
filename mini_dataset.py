@@ -13,8 +13,8 @@ import itertools
 
 from sklearn.model_selection import train_test_split, RepeatedStratifiedKFold, cross_val_score
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import classification_report, accuracy_score, confusion_matrix, f1_score
-from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import classification_report, accuracy_score, confusion_matrix, f1_score, scorer
+from sklearn.preprocessing import LabelEncoder, LabelBinarizer
 from imblearn import under_sampling, combine
 
 
@@ -44,6 +44,13 @@ def plot_confusion_matrix(cm, classes,
     plt.tight_layout()
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
+
+
+def f1_encoder(y, y_pred, **kwargs):
+    lb = LabelBinarizer()
+    y_binarized = lb.fit_transform(y)
+    y_pred_bin = lb.transform(y_pred)
+    return f1_score(y_binarized, y_pred_bin, average='macro')
 
 
 if __name__ == '__main__':
@@ -76,8 +83,7 @@ if __name__ == '__main__':
 
     # encode labels
     le = LabelEncoder()
-    le.fit(y)
-    y_transformed = le.transform(y)
+    y_transformed = le.fit_transform(y)
     # string to float
     X = X.astype(float)
     # divide dataset
@@ -88,7 +94,7 @@ if __name__ == '__main__':
     print(counts)
 
     # Resample the train set
-    resampler = under_sampling.NeighbourhoodCleaningRule(n_jobs=-1)
+    resampler = combine.SMOTETomek(n_jobs=-1)
     X_train, y_train = resampler.fit_sample(X_train, y_train)
     print("Resampled train set has %d samples" % len(y_train))
     _, counts = np.unique(y_train, return_counts=True)
@@ -102,13 +108,14 @@ if __name__ == '__main__':
     n_estim = list(range(10, min(2*n_features+1, 100), 5))
 
     cv_scores = []
-
+    my_scorer = scorer.make_scorer(f1_encoder, greater_is_better=True)
+    print("Testing trees:", end=" ")
     for i in n_estim:
         print(i, end=' ', flush=True)
         amazon.set_params(n_estimators=i)
         # 5x2 cross-validation
         kfold = RepeatedStratifiedKFold(n_repeats=5, n_splits=2)
-        scores = cross_val_score(amazon, X_train, y_train, cv=kfold, scoring='accuracy', n_jobs=-1)
+        scores = cross_val_score(amazon, X_train, y_train, cv=kfold, scoring=my_scorer, n_jobs=-1)
         cv_scores.append(scores.mean())
 
     print("")
