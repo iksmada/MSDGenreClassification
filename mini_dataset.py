@@ -81,21 +81,23 @@ if __name__ == '__main__':
     # string to float
     X = X.astype(float)
     # divide dataset
-    combination = combine.SMOTETomek(n_jobs=-1)
-    X, y_transformed = combination.fit_sample(X, y_transformed)
     X_train, X_test, y_train, y_test = train_test_split(X, y_transformed, train_size=TRAIN_SIZE, stratify=y_transformed)
 
+    # Resample the train set
+    resampler = under_sampling.OneSidedSelection(n_jobs=-1)
+    X_train, y_train = resampler.fit_sample(X_train, y_train)
     # tribute to our biggest forest
     amazon = RandomForestClassifier(max_features="sqrt")
 
     # Grid Search number of trees
     # Range of `n_estimators` values to explore.
-    n_features = X.shape[1]
-    n_estim = list(range(10, min(2*n_features, 100), 2))
+    n_features = X_train.shape[1]
+    n_estim = list(range(10, min(2*n_features+1, 100), 5))
 
     cv_scores = []
 
     for i in n_estim:
+        print(i, end=' ', flush=True)
         amazon.set_params(n_estimators=i)
         # 5x2 cross-validation
         kfold = RepeatedStratifiedKFold(n_repeats=5, n_splits=2)
