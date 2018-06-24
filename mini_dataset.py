@@ -14,7 +14,7 @@ import itertools
 from sklearn.model_selection import train_test_split, RepeatedStratifiedKFold, cross_val_score
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix, f1_score, scorer
-from sklearn.preprocessing import LabelEncoder, LabelBinarizer
+from sklearn.preprocessing import LabelEncoder, LabelBinarizer, OneHotEncoder
 from imblearn import under_sampling, combine
 
 
@@ -79,14 +79,16 @@ if __name__ == '__main__':
     X = np.array(X)
     # Remove song info and split classes and data
     y, X = np.split(X, [1], axis=1)
-    # Remove irrelevant features
+    # Remove irrelevant features - track_id,artist_name,title,duration
     X = np.delete(X, [0, 1, 2, 8], 1)
+    # One hot encode categorical variables - time_signature,key 2 e 3
+    # implicit string to float
+    enc = OneHotEncoder(categorical_features=[2, 3], sparse=False)
+    X = enc.fit_transform(X)
 
     # encode labels
     le = LabelEncoder()
     y_transformed = le.fit_transform(y)
-    # string to float
-    X = X.astype(float)
     # divide dataset
     X_train, X_test, y_train, y_test = train_test_split(X, y_transformed, train_size=TRAIN_SIZE, stratify=y_transformed)
     print("Test set has %d samples" % len(y_test))
