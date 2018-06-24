@@ -97,7 +97,7 @@ def get_feats(h5):
 	f.append(str(hdf5_getters.get_energy(h5)))
 	f.append(str(hdf5_getters.get_start_of_fade_out(h5)))
 	f.append(str(hdf5_getters.get_year(h5)))
-	return file
+	return f
 
 # Generate output file
 output = open('./output.csv', 'w')
