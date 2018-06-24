@@ -5,11 +5,10 @@ from glob import glob
 
 # Bring TagTraum's genres into memory
 genres = {}
-f = open('./data/TagTraum/msd_tagtraum_cd2c.cls', 'r')
-for line in f:
-    [track_id, track_genre] = line.strip().split(maxsplit=1)
-    genres[track_id] = track_genre
-f.close
+with open('./data/TagTraum/msd_tagtraum_cd2c.cls', 'r') as f:
+    for line in f:
+        [track_id, track_genre] = line.strip().split(maxsplit=1)
+        genres[track_id] = track_genre
 
 # Feature names
 featnames = ''
@@ -55,6 +54,7 @@ featnames += 'ptp_loudness_start,mu_loudness_start,med_loudness_start,std_loudne
 featnames += 'hotttnesss,danceability,end_of_fade_in,energy,start_of_fade_out,year\n'
 num_feats = len(featnames.split(','))
 
+
 def get_statistical_feats(feat):
     sf = []
     min = np.amin(feat, axis=0)
@@ -75,6 +75,7 @@ def get_statistical_feats(feat):
     sf.append(str(med)) if isinstance(med, np.generic) else sf.extend([str(k) for k in med])
     sf.append(str(std)) if isinstance(std, np.generic) else sf.extend([str(k) for k in std])
     return sf
+
 
 def get_feats(h5):
     f = []
@@ -99,22 +100,25 @@ def get_feats(h5):
     f.append(str(hdf5_getters.get_year(h5)))
     return f
 
+
+output_filename = './output.csv'
+exists = os.path.isfile(output_filename)
 # Generate output file
-output = open('./output.csv', 'w')
-output.write(featnames);
+with open(output_filename, 'a', encoding='utf-8') as output:
+    if not exists:
+        output.write(featnames)
 
-# Go through all files in ./data/MSD
-files = [y for x in os.walk('./data/MSD') for y in glob(os.path.join(x[0], '*.h5'))]
-for file in files:
-    filename = os.path.splitext(os.path.basename(file))[0]
+    # Go through all files in ./data/MSD
+    files = [y for x in os.walk('./data/MSD') for y in glob(os.path.join(x[0], '*.h5'))]
+    for file in files:
+        filename = os.path.splitext(os.path.basename(file))[0]
 
-    # Get track's features
-    if filename in genres:
-        h5 = hdf5_getters.open_h5_file_read(file)
-        feats = [genres[filename], filename]
-        feats.extend(get_feats(h5))
-        # Close h5 and write into output file
-        h5.close()
-        assert len(feats) == num_feats,'feat length problem, len(feats)='+str(len(feats))
-        output.write(','.join(feats) + '\n')
-output.close()
+        # Get track's features
+        if filename in genres:
+            h5 = hdf5_getters.open_h5_file_read(file)
+            feats = [genres[filename], filename]
+            feats.extend(get_feats(h5))
+            # Close h5 and write into output file
+            h5.close()
+            assert len(feats) == num_feats, 'feat length problem, len(feats)='+str(len(feats))
+            output.write(','.join(feats) + '\n')
