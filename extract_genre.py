@@ -12,6 +12,7 @@ for line in f:
 f.close
 
 # Feature names
+NUM_FEATS = 34
 featnames = 'genre,track_id,artist_name,title,loudness,tempo,time_signature,key,mode,duration,'
 featnames += 'avg_timbre1,avg_timbre2,avg_timbre3,avg_timbre4,avg_timbre5,avg_timbre6,'
 featnames += 'avg_timbre7,avg_timbre8,avg_timbre9,avg_timbre10,avg_timbre11,avg_timbre12,'
@@ -31,8 +32,8 @@ for file in files:
 
 		# Get track's features
 		feats = [genres[filename], filename]
-		feats.append(hdf5_getters.get_artist_name(h5).decode('utf8'))
-		feats.append(hdf5_getters.get_title(h5).decode('utf8'))
+		feats.append(hdf5_getters.get_artist_name(h5).decode('utf8').replace(',',''))
+		feats.append(hdf5_getters.get_title(h5).decode('utf8').replace(',',''))
 		feats.append(str(hdf5_getters.get_loudness(h5)))
 		feats.append(str(hdf5_getters.get_tempo(h5)))
 		feats.append(str(hdf5_getters.get_time_signature(h5)))
@@ -51,5 +52,6 @@ for file in files:
 
 		# Close h5 and write into output file
 		h5.close()
+		assert len(feats) == NUM_FEATS,'feat length problem, len(feats)='+str(len(feats))
 		output.write(','.join(feats) + '\n')
 output.close()
