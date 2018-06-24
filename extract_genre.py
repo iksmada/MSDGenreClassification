@@ -12,7 +12,6 @@ for line in f:
 f.close
 
 # Feature names
-NUM_FEATS = 208
 featnames = ''
 featnames += 'genre,track_id,artist_name,title,year,loudness,tempo,time_signature,key,mode,'
 featnames += 'duration,hotttnesss,danceability,end_of_fade_in,energy,start_of_fade_out,'
@@ -47,18 +46,34 @@ featnames += 'med_timbre7,med_timbre8,med_timbre9,med_timbre10,med_timbre11,med_
 featnames += 'std_timbre1,std_timbre2,std_timbre3,std_timbre4,std_timbre5,std_timbre6,'
 featnames += 'std_timbre7,std_timbre8,std_timbre9,std_timbre10,std_timbre11,std_timbre12,'
 featnames += 'var_timbre1,var_timbre2,var_timbre3,var_timbre4,var_timbre5,var_timbre6,'
-featnames += 'var_timbre7,var_timbre8,var_timbre9,var_timbre10,var_timbre11,var_timbre12\n'
+featnames += 'var_timbre7,var_timbre8,var_timbre9,var_timbre10,var_timbre11,var_timbre12,'
+featnames += 'min_loudness_max,max_loudness_max,ptp_loudness_max,mu_loudness_max,'
+featnames += 'avg_loudness_max,med_loudness_max,std_loudness_max,var_loudness_max,'
+featnames += 'min_loudness_max_time,max_loudness_max_time,ptp_loudness_max_time,mu_loudness_max_time,'
+featnames += 'avg_loudness_max_time,med_loudness_max_time,std_loudness_max_time,var_loudness_max_time,'
+featnames += 'min_loudness_start,max_loudness_start,ptp_loudness_start,mu_loudness_start,'
+featnames += 'avg_loudness_start,med_loudness_start,std_loudness_start,var_loudness_start\n'
+num_feats = len(featnames.split(','))
 
 def get_statistical_feats(feat):
 	sf = []
-	sf.extend([str(min) for min in np.amin(feat, axis=0)])
-	sf.extend([str(max) for max in np.amax(feat, axis=0)])
-	sf.extend([str(ptp) for ptp in np.ptp(feat, axis=0)])
-	sf.extend([str(mu)  for mu  in np.mean(feat, axis=0)])
-	sf.extend([str(avg) for avg in np.average(feat, axis=0)])
-	sf.extend([str(med) for med in np.median(feat, axis=0)])
-	sf.extend([str(std) for std in np.std(feat, axis=0)])
-	sf.extend([str(var) for var in np.var(feat, axis=0)])
+	min = np.amin(feat, axis=0)
+	max = np.amax(feat, axis=0)
+	ptp = np.ptp(feat, axis=0)
+	mu  = np.mean(feat, axis=0)
+	avg = np.average(feat, axis=0)
+	med = np.median(feat, axis=0)
+	std = np.std(feat, axis=0)
+	var = np.var(feat, axis=0)
+	# Scalars (np.generic) and arrays (np.ndarray) are handled differently
+	sf.append(str(min)) if isinstance(min, np.generic) else sf.extend([str(k) for k in min])
+	sf.append(str(max)) if isinstance(max, np.generic) else sf.extend([str(k) for k in max])
+	sf.append(str(ptp)) if isinstance(ptp, np.generic) else sf.extend([str(k) for k in ptp])
+	sf.append(str(mu))  if isinstance(mu,  np.generic) else sf.extend([str(k) for k in  mu])
+	sf.append(str(avg)) if isinstance(avg, np.generic) else sf.extend([str(k) for k in avg])
+	sf.append(str(med)) if isinstance(med, np.generic) else sf.extend([str(k) for k in med])
+	sf.append(str(std)) if isinstance(std, np.generic) else sf.extend([str(k) for k in std])
+	sf.append(str(var)) if isinstance(var, np.generic) else sf.extend([str(k) for k in var])
 	return sf
 
 def get_feats(h5):
@@ -79,7 +94,10 @@ def get_feats(h5):
 	f.append(str(hdf5_getters.get_start_of_fade_out(h5)))
 	f.extend(get_statistical_feats(hdf5_getters.get_segments_pitches(h5)))
 	f.extend(get_statistical_feats(hdf5_getters.get_segments_timbre(h5)))
-	return f
+	f.extend(get_statistical_feats(hdf5_getters.get_segments_loudness_max(h5)))
+	f.extend(get_statistical_feats(hdf5_getters.get_segments_loudness_max_time(h5)))
+	f.extend(get_statistical_feats(hdf5_getters.get_segments_loudness_start(h5)))
+	return file
 
 # Generate output file
 output = open('./output.csv', 'w')
@@ -97,6 +115,6 @@ for file in files:
 		feats.extend(get_feats(h5))
 		# Close h5 and write into output file
 		h5.close()
-		assert len(feats) == NUM_FEATS,'feat length problem, len(feats)='+str(len(feats))
+		assert len(feats) == num_feats,'feat length problem, len(feats)='+str(len(feats))
 		output.write(','.join(feats) + '\n')
 output.close()
