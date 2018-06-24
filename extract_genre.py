@@ -7,8 +7,8 @@ from glob import glob
 genres = {}
 f = open('./data/TagTraum/msd_tagtraum_cd2c.cls', 'r')
 for line in f:
-	[track_id, track_genre] = line.strip().split(maxsplit=1)
-	genres[track_id] = track_genre
+    [track_id, track_genre] = line.strip().split(maxsplit=1)
+    genres[track_id] = track_genre
 f.close
 
 # Feature names
@@ -56,48 +56,48 @@ featnames += 'hotttnesss,danceability,end_of_fade_in,energy,start_of_fade_out,ye
 num_feats = len(featnames.split(','))
 
 def get_statistical_feats(feat):
-	sf = []
-	min = np.amin(feat, axis=0)
-	max = np.amax(feat, axis=0)
-	ptp = np.ptp(feat, axis=0)
-	mu  = np.mean(feat, axis=0)
-	avg = np.average(feat, axis=0)
-	med = np.median(feat, axis=0)
-	std = np.std(feat, axis=0)
-	var = np.var(feat, axis=0)
-	# Scalars (np.generic) and arrays (np.ndarray) are handled differently
-	sf.append(str(avg)) if isinstance(avg, np.generic) else sf.extend([str(k) for k in avg])
-	sf.append(str(var)) if isinstance(var, np.generic) else sf.extend([str(k) for k in var])
-	sf.append(str(min)) if isinstance(min, np.generic) else sf.extend([str(k) for k in min])
-	sf.append(str(max)) if isinstance(max, np.generic) else sf.extend([str(k) for k in max])
-	sf.append(str(ptp)) if isinstance(ptp, np.generic) else sf.extend([str(k) for k in ptp])
-	sf.append(str(mu))  if isinstance(mu,  np.generic) else sf.extend([str(k) for k in  mu])
-	sf.append(str(med)) if isinstance(med, np.generic) else sf.extend([str(k) for k in med])
-	sf.append(str(std)) if isinstance(std, np.generic) else sf.extend([str(k) for k in std])
-	return sf
+    sf = []
+    min = np.amin(feat, axis=0)
+    max = np.amax(feat, axis=0)
+    ptp = np.ptp(feat, axis=0)
+    mu  = np.mean(feat, axis=0)
+    avg = np.average(feat, axis=0)
+    med = np.median(feat, axis=0)
+    std = np.std(feat, axis=0)
+    var = np.var(feat, axis=0)
+    # Scalars (np.generic) and arrays (np.ndarray) are handled differently
+    sf.append(str(avg)) if isinstance(avg, np.generic) else sf.extend([str(k) for k in avg])
+    sf.append(str(var)) if isinstance(var, np.generic) else sf.extend([str(k) for k in var])
+    sf.append(str(min)) if isinstance(min, np.generic) else sf.extend([str(k) for k in min])
+    sf.append(str(max)) if isinstance(max, np.generic) else sf.extend([str(k) for k in max])
+    sf.append(str(ptp)) if isinstance(ptp, np.generic) else sf.extend([str(k) for k in ptp])
+    sf.append(str(mu))  if isinstance(mu,  np.generic) else sf.extend([str(k) for k in  mu])
+    sf.append(str(med)) if isinstance(med, np.generic) else sf.extend([str(k) for k in med])
+    sf.append(str(std)) if isinstance(std, np.generic) else sf.extend([str(k) for k in std])
+    return sf
 
 def get_feats(h5):
-	f = []
-	f.append(hdf5_getters.get_artist_name(h5).decode('utf8').replace(',',''))
-	f.append(hdf5_getters.get_title(h5).decode('utf8').replace(',',''))
-	f.append(str(hdf5_getters.get_loudness(h5)))
-	f.append(str(hdf5_getters.get_tempo(h5)))
-	f.append(str(hdf5_getters.get_time_signature(h5)))
-	f.append(str(hdf5_getters.get_key(h5)))
-	f.append(str(hdf5_getters.get_mode(h5)))
-	f.append(str(hdf5_getters.get_duration(h5)))
-	f.extend(get_statistical_feats(hdf5_getters.get_segments_timbre(h5)))
-	f.extend(get_statistical_feats(hdf5_getters.get_segments_pitches(h5)))
-	f.extend(get_statistical_feats(hdf5_getters.get_segments_loudness_max(h5)))
-	f.extend(get_statistical_feats(hdf5_getters.get_segments_loudness_max_time(h5)))
-	f.extend(get_statistical_feats(hdf5_getters.get_segments_loudness_start(h5)))
-	f.append(str(hdf5_getters.get_song_hotttnesss(h5)))
-	f.append(str(hdf5_getters.get_danceability(h5)))
-	f.append(str(hdf5_getters.get_end_of_fade_in(h5)))
-	f.append(str(hdf5_getters.get_energy(h5)))
-	f.append(str(hdf5_getters.get_start_of_fade_out(h5)))
-	f.append(str(hdf5_getters.get_year(h5)))
-	return f
+    f = []
+    f.append(hdf5_getters.get_artist_name(h5).decode('utf8').replace(',',''))
+    f.append(hdf5_getters.get_title(h5).decode('utf8').replace(',',''))
+    f.append(str(hdf5_getters.get_loudness(h5)))
+    f.append(str(hdf5_getters.get_tempo(h5)))
+    f.append(str(hdf5_getters.get_time_signature(h5)))
+    f.append(str(hdf5_getters.get_key(h5)))
+    f.append(str(hdf5_getters.get_mode(h5)))
+    f.append(str(hdf5_getters.get_duration(h5)))
+    f.extend(get_statistical_feats(hdf5_getters.get_segments_timbre(h5)))
+    f.extend(get_statistical_feats(hdf5_getters.get_segments_pitches(h5)))
+    f.extend(get_statistical_feats(hdf5_getters.get_segments_loudness_max(h5)))
+    f.extend(get_statistical_feats(hdf5_getters.get_segments_loudness_max_time(h5)))
+    f.extend(get_statistical_feats(hdf5_getters.get_segments_loudness_start(h5)))
+    f.append(str(hdf5_getters.get_song_hotttnesss(h5)))
+    f.append(str(hdf5_getters.get_danceability(h5)))
+    f.append(str(hdf5_getters.get_end_of_fade_in(h5)))
+    f.append(str(hdf5_getters.get_energy(h5)))
+    f.append(str(hdf5_getters.get_start_of_fade_out(h5)))
+    f.append(str(hdf5_getters.get_year(h5)))
+    return f
 
 # Generate output file
 output = open('./output.csv', 'w')
@@ -106,15 +106,15 @@ output.write(featnames);
 # Go through all files in ./data/MSD
 files = [y for x in os.walk('./data/MSD') for y in glob(os.path.join(x[0], '*.h5'))]
 for file in files:
-	filename = os.path.splitext(os.path.basename(file))[0]
+    filename = os.path.splitext(os.path.basename(file))[0]
 
-	# Get track's features
-	if filename in genres:
-		h5 = hdf5_getters.open_h5_file_read(file)
-		feats = [genres[filename], filename]
-		feats.extend(get_feats(h5))
-		# Close h5 and write into output file
-		h5.close()
-		assert len(feats) == num_feats,'feat length problem, len(feats)='+str(len(feats))
-		output.write(','.join(feats) + '\n')
+    # Get track's features
+    if filename in genres:
+        h5 = hdf5_getters.open_h5_file_read(file)
+        feats = [genres[filename], filename]
+        feats.extend(get_feats(h5))
+        # Close h5 and write into output file
+        h5.close()
+        assert len(feats) == num_feats,'feat length problem, len(feats)='+str(len(feats))
+        output.write(','.join(feats) + '\n')
 output.close()
