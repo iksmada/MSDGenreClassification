@@ -1,11 +1,26 @@
+import argparse
 import os
 import hdf5_getters
 import numpy as np
 from glob import glob
 
+parser = argparse.ArgumentParser(description='Million Song Dataset Genre Classification')
+parser.add_argument('-ic', '--input-classes', type=str, help='Input Tag traum classes path',
+                    default="data/TagTraum/msd_tagtraum_cd2c.cls")
+parser.add_argument('-msd', '--msd', type=str, help='MSD /data path',
+                    default="data/MSD")
+parser.add_argument('-o', '--output', type=str, help='Output data file path',
+                    default="extractedLetters/output.csv")
+
+args = vars(parser.parse_args())
+print(args)
+INPUTCLASSES = args["input_classes"]
+MSD = args["msd"]
+OUTPUT = args['output']
+
 # Bring TagTraum's genres into memory
 genres = {}
-with open('./data/TagTraum/msd_tagtraum_cd2c.cls', 'r') as f:
+with open(INPUTCLASSES, 'r') as f:
     for line in f:
         [track_id, track_genre] = line.strip().split(maxsplit=1)
         genres[track_id] = track_genre
@@ -101,7 +116,10 @@ def get_feats(h5):
     return f
 
 
-output_filename = './output.csv'
+output_filename = OUTPUT
+if not output_filename.endswith('.csv'):
+    output_filename = output_filename + ".csv"
+
 exists = os.path.isfile(output_filename)
 # Generate output file
 with open(output_filename, 'a', encoding='utf-8') as output:
