@@ -82,11 +82,11 @@ if __name__ == '__main__':
         for row in csvreader:
             y.append(row[0])
             # Remove song info and split classes and data
-            row = np.array(row[4:(FEATURES+4)]).astype(float)
+            row = np.nan_to_num(np.array(row[4:(FEATURES+4 if FEATURES else None)]).astype(float))
             X.append(row)
     # Convert to numpy array
-    X = np.array(X)
-    y = np.array(y)
+    #X = np.asarray(X)
+    #y = np.array(y)
     # Remove irrelevant features - track_id,artist_name,title,duration
     #X = np.delete(X, [0, 1, 2, 8], 1)
     # One hot encode categorical variables - time_signature,key 2 e 3
