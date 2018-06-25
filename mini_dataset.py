@@ -119,7 +119,7 @@ if __name__ == '__main__':
         # Grid Search number of trees
         # Range of `n_estimators` values to explore.
         n_features = X_train.shape[1]
-        n_estim = list(range(10, min(n_features, 100)+1, 5))
+        n_estim = list(range(max(int(n_features/3), 10), min(n_features, 100)+1, 5))
 
         cv_scores = []
         my_scorer = scorer.make_scorer(f1_encoder, greater_is_better=True)
@@ -128,7 +128,7 @@ if __name__ == '__main__':
             print(i, end=' ', flush=True)
             amazon.set_params(n_estimators=i)
             # 5x2 cross-validation
-            kfold = RepeatedStratifiedKFold(n_repeats=5, n_splits=2)
+            kfold = RepeatedStratifiedKFold(n_repeats=1, n_splits=2)
             scores = cross_val_score(amazon, X_train, y_train, cv=kfold, scoring=my_scorer, n_jobs=-1)
             cv_scores.append(scores.mean())
 
