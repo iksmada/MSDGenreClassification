@@ -59,13 +59,17 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Million Song Dataset Genre Classification')
     parser.add_argument('-i', '--input', type=str, help='Input data path',
                         default="data/MSD_genre/msd_genre_dataset.csv")
-    parser.add_argument('-s', '--size', help='Train size in % relative to test set',
+    parser.add_argument('-s', '--size', type=float, help='Train size in % relative to test set',
                         default=0.8)
+    parser.add_argument('-t', '--tree', type=int, help='Number of tree')
+    parser.add_argument('-n', '--features', type=int, help='Number of features from the beginning')
 
     args = vars(parser.parse_args())
     print(args)
     INPUT = args["input"]
     TRAIN_SIZE = args['size']
+    TREE = args['tree']
+    FEATURES = args['features']
 
     # Load data
     X = []
@@ -79,6 +83,8 @@ if __name__ == '__main__':
     X = np.array(X)
     # Remove song info and split classes and data
     y, X = np.split(X, [1], axis=1)
+    if FEATURES:
+        X = X[:, :FEATURES]
     # Remove irrelevant features - track_id,artist_name,title,duration
     X = np.delete(X, [0, 1, 2, 8], 1)
     # One hot encode categorical variables - time_signature,key 2 e 3
@@ -105,31 +111,35 @@ if __name__ == '__main__':
     # tribute to our biggest forest
     amazon = RandomForestClassifier(max_features="sqrt")
 
-    # Grid Search number of trees
-    # Range of `n_estimators` values to explore.
-    n_features = X_train.shape[1]
-    n_estim = list(range(10, min(2*n_features+1, 100), 5))
+    if TREE:
+        optimal_n_estim = TREE
+    else:
+        # Grid Search number of trees
+        # Range of `n_estimators` values to explore.
+        n_features = X_train.shape[1]
+        n_estim = list(range(10, min(2*n_features+1, 100), 5))
 
-    cv_scores = []
-    my_scorer = scorer.make_scorer(f1_encoder, greater_is_better=True)
-    print("Testing trees:", end=" ")
-    for i in n_estim:
-        print(i, end=' ', flush=True)
-        amazon.set_params(n_estimators=i)
-        # 5x2 cross-validation
-        kfold = RepeatedStratifiedKFold(n_repeats=5, n_splits=2)
-        scores = cross_val_score(amazon, X_train, y_train, cv=kfold, scoring=my_scorer, n_jobs=-1)
-        cv_scores.append(scores.mean())
+        cv_scores = []
+        my_scorer = scorer.make_scorer(f1_encoder, greater_is_better=True)
+        print("Testing trees:", end=" ")
+        for i in n_estim:
+            print(i, end=' ', flush=True)
+            amazon.set_params(n_estimators=i)
+            # 5x2 cross-validation
+            kfold = RepeatedStratifiedKFold(n_repeats=5, n_splits=2)
+            scores = cross_val_score(amazon, X_train, y_train, cv=kfold, scoring=my_scorer, n_jobs=-1)
+            cv_scores.append(scores.mean())
 
-    print("")
-    optimal_n_estim = n_estim[cv_scores.index(max(cv_scores))]
-    print("The optimal number of estimators is %d with %0.1f%%" % (optimal_n_estim, max(cv_scores)*100))
+        print("")
+        optimal_n_estim = n_estim[cv_scores.index(max(cv_scores))]
+        print("The optimal number of estimators is %d with %0.1f%%" % (optimal_n_estim, max(cv_scores)*100))
 
-    plt.plot(n_estim, cv_scores)
-    plt.xlabel('Number of Estimators')
-    plt.ylabel('Train Accuracy')
-    plt.show()
+        plt.plot(n_estim, cv_scores)
+        plt.xlabel('Number of Estimators')
+        plt.ylabel('Train Accuracy')
+        plt.show()
 
+    np.set_printoptions(precision=2, suppress=True)
     amazon.set_params(n_estimators=optimal_n_estim, n_jobs=-1)
     amazon.fit(X_train, y_train)
     print(amazon.feature_importances_)
@@ -139,7 +149,6 @@ if __name__ == '__main__':
 
     cmat = confusion_matrix(y_test, y_pred)
     cmat = cmat.astype('float') / cmat.sum(axis=1)[:, np.newaxis]
-    np.set_printoptions(precision=2, suppress=True)
     #print(le.classes_)
     #print(cmat)
     acc_per_class = cmat.diagonal() / cmat.sum(axis=1)
