@@ -36,7 +36,7 @@ def plot_confusion_matrix(cm, classes,
     fmt = '.2f'
     thresh = cm.max() / 2.
     for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
-        plt.text(j, i, format(cm[i, j], fmt),
+        plt.text(j, i, int(format(cm[i, j], fmt)*100),
                  horizontalalignment="center",
                  fontsize="smaller",
                  color="white" if cm[i, j] > thresh else "black")
@@ -58,7 +58,8 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Million Song Dataset Genre Classification')
     parser.add_argument('-i', '--input', type=str, help='Input data path',
-                        default="data/MSD_genre/msd_genre_dataset.csv")
+                        #default="data/MSD_genre/msd_genre_dataset.csv")
+                        default="extractedLetters/all_letters.csv")
     parser.add_argument('-s', '--size', type=float, help='Train size in % relative to test set',
                         default=0.8)
     parser.add_argument('-t', '--tree', type=int, help='Number of tree')
@@ -73,18 +74,19 @@ if __name__ == '__main__':
 
     # Load data
     X = []
+    y = []
     with open(INPUT, newline='') as csvfile:
         csvreader = csv.reader(filter(lambda row: row[0] != '#', csvfile))
         fieldnames = next(csvreader)
         print(fieldnames)
         for row in csvreader:
+            y.append(row[0])
+            # Remove song info and split classes and data
+            row = np.array(row[4:(FEATURES+4)]).astype(float)
             X.append(row)
     # Convert to numpy array
     X = np.array(X)
-    # Remove song info and split classes and data
-    y, X = np.split(X, [1], axis=1)
-    if FEATURES:
-        X = X[:, :FEATURES]
+    y = np.array(y)
     # Remove irrelevant features - track_id,artist_name,title,duration
     X = np.delete(X, [0, 1, 2, 8], 1)
     # One hot encode categorical variables - time_signature,key 2 e 3
