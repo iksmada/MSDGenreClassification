@@ -36,7 +36,7 @@ def plot_confusion_matrix(cm, classes,
     fmt = '.2f'
     thresh = cm.max() / 2.
     for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
-        plt.text(j, i, int(format(cm[i, j], fmt)*100),
+        plt.text(j, i, int(np.round(cm[i, j]*100)),
                  horizontalalignment="center",
                  fontsize="smaller",
                  color="white" if cm[i, j] > thresh else "black")
@@ -88,7 +88,7 @@ if __name__ == '__main__':
     X = np.array(X)
     y = np.array(y)
     # Remove irrelevant features - track_id,artist_name,title,duration
-    X = np.delete(X, [0, 1, 2, 8], 1)
+    #X = np.delete(X, [0, 1, 2, 8], 1)
     # One hot encode categorical variables - time_signature,key 2 e 3
     # implicit string to float
     enc = OneHotEncoder(categorical_features=[2, 3], sparse=False)
@@ -119,7 +119,7 @@ if __name__ == '__main__':
         # Grid Search number of trees
         # Range of `n_estimators` values to explore.
         n_features = X_train.shape[1]
-        n_estim = list(range(10, min(2*n_features+1, 100), 5))
+        n_estim = list(range(10, min(n_features, 100)+1, 5))
 
         cv_scores = []
         my_scorer = scorer.make_scorer(f1_encoder, greater_is_better=True)
