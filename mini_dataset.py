@@ -143,7 +143,7 @@ if __name__ == '__main__':
             print(i, end=' ', flush=True)
             amazon.set_params(n_estimators=i)
             # 5x2 cross-validation
-            kfold = RepeatedStratifiedKFold(n_repeats=1, n_splits=2)
+            kfold = RepeatedStratifiedKFold(n_repeats=5, n_splits=2)
             scores = cross_val_score(amazon, X_train, y_train, cv=kfold, scoring=my_scorer, n_jobs=-1)
             cv_scores.append(scores.mean())
 
