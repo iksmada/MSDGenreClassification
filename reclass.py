@@ -16,21 +16,29 @@ def kmeans_reclass(X, y):
 
     # separate clusters
     clusters = dict()
-    i = 0
-    for clazz in y_pred:
-        if clazz not in clusters:
-            clusters[clazz] = []
-        clusters[clazz].append(y[i])
-        i = i + 1
+    orig = 0
+    for pred in y_pred:
+        if pred not in clusters:
+            clusters[pred] = []
+        clusters[pred].append(y[orig])
+        orig = orig + 1
+
+    counts = np.zeros((n_classes, n_classes), dtype=int)
+    for pred, cluster in clusters.items():
+        for orig in range(n_classes):
+            # create matrix columns are originals classes and row are clusters
+            counts[pred][orig] = cluster.count(orig)
 
     conversor = dict()
-    for clazz, cluster in clusters.items():
-        values, counts = np.unique(cluster, return_counts=True)
-        conversor[clazz] = values[np.argmax(counts)]
+    #get biggest to smallest cluster
+    for pred in np.argsort(-np.sum(counts, axis=1)):
+        orig = np.argmax(counts[pred, :])
+        conversor[pred] = orig
+        counts[:, orig] = np.zeros(counts[:, orig].shape)
 
     y_reclass = []
-    for clazz in y_pred:
-        y_reclass.append(conversor[clazz])
+    for pred in y_pred:
+        y_reclass.append(conversor[pred])
 
     return np.array(y_reclass)
 
