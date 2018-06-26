@@ -67,8 +67,8 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Million Song Dataset Genre Classification')
     parser.add_argument('-i', '--input', type=str, help='Input data path',
-                        #default="data/MSD_genre/msd_genre_dataset.csv")
-                        default="extractedLetters/all_letters.csv")
+                        default="data/MSD_genre/msd_genre_dataset.csv")
+                        #default="extractedLetters/all_letters.csv")
     parser.add_argument('-s', '--size', type=float, help='Train size in % relative to test set',
                         default=0.8)
     parser.add_argument('-t', '--tree', type=int, help='Number of tree')
@@ -99,11 +99,11 @@ if __name__ == '__main__':
     X = np.asarray(X)
     y = np.array(y)
     # Remove irrelevant features - track_id,artist_name,title,duration
-    #X = np.delete(X, [0, 1, 2, 8], 1)
+    #X = np.delete(X, 5, 1)
     # One hot encode categorical variables - time_signature,key 2 e 3
     # implicit string to float
-    enc = OneHotEncoder(categorical_features=[2, 3], sparse=False)
-    X = enc.fit_transform(X)
+    #enc = OneHotEncoder(categorical_features=[2, 3], sparse=False)
+    #X = enc.fit_transform(X)
 
     # encode labels
     le = LabelEncoder()
@@ -169,9 +169,9 @@ if __name__ == '__main__':
     #print(le.classes_)
     #print(cmat)
     acc_per_class = cmat.diagonal() / cmat.sum(axis=1)
-    print("Accuracy on test set of %d samples: %f" % (len(y_test), accuracy_score(y_test, y_pred)))
-    print("Normalized Accuracy on test set: %f" % (np.mean(acc_per_class)))
-    print("F1 Score on test set: %f" % (f1_score(y_test, y_pred, average="macro")))
+    print("Accuracy on test set of %d samples: %.2f" % (len(y_test), accuracy_score(y_test, y_pred)))
+    print("Normalized Accuracy on test set: %.2f" % (np.mean(acc_per_class)))
+    print("F1 Score on test set: %.2f" % (f1_score(y_test, y_pred, average="macro")))
     plt.figure()
     plot_confusion_matrix(cmat, classes=le.classes_, title='Random Forest Confusion matrix')
     plt.show()
