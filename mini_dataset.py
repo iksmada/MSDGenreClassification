@@ -124,7 +124,7 @@ if __name__ == '__main__':
         # Grid Search number of trees
         # Range of `n_estimators` values to explore.
         n_features = X_train.shape[1]
-        n_estim = list(range(max(int(n_features/3), 10), min(n_features, 100)+1, 5))
+        n_estim = list(range(max(int(n_features/5), 10), min(n_features, 200)+1, 5))
 
         cv_scores = []
         my_scorer = scorer.make_scorer(f1_encoder, greater_is_better=True)
@@ -146,11 +146,11 @@ if __name__ == '__main__':
         plt.ylabel('Train Accuracy')
         plt.show()
 
-    np.set_printoptions(precision=2, suppress=True)
     amazon.set_params(n_estimators=optimal_n_estim, n_jobs=-1)
     amazon.fit(X_train, y_train)
     print(amazon.feature_importances_)
 
+    np.set_printoptions(precision=2, suppress=True)
     y_pred = amazon.predict(X_test)
     print(classification_report(y_test, y_pred, target_names=le.classes_))
 
