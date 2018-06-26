@@ -18,6 +18,8 @@ from sklearn.preprocessing import LabelEncoder, LabelBinarizer, OneHotEncoder
 from imblearn import under_sampling, combine
 
 
+from reclass import kmeans_reclass
+
 def plot_confusion_matrix(cm, classes,
                           title='Confusion matrix',
                           cmap=plt.cm.Greens):
@@ -71,6 +73,7 @@ if __name__ == '__main__':
                         default=0.8)
     parser.add_argument('-t', '--tree', type=int, help='Number of tree')
     parser.add_argument('-n', '--features', type=int, help='Number of features from the beginning')
+    parser.add_argument('--reclass', action='store_true', help='Use reclassification algorithm')
 
     args = vars(parser.parse_args())
     print(args)
@@ -78,6 +81,7 @@ if __name__ == '__main__':
     TRAIN_SIZE = args['size']
     TREE = args['tree']
     FEATURES = args['features']
+    RECLASS = args['reclass']
 
     # Load data
     X = []
@@ -115,6 +119,12 @@ if __name__ == '__main__':
     X_train, y_train = resampler.fit_sample(X_train, y_train)
     print("Resampled train set has %d samples" % len(y_train))
     print_distribution(y_train, le.classes_)
+
+    if RECLASS:
+        y_train = kmeans_reclass(X_train, y_train)
+        print("Reclassified train set has %d samples" % len(y_train))
+        print_distribution(y_train, le.classes_)
+
     # tribute to our biggest forest
     amazon = RandomForestClassifier(max_features="sqrt")
 
