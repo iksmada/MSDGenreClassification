@@ -53,6 +53,13 @@ def f1_encoder(y, y_pred, **kwargs):
     return f1_score(y_binarized, y_pred_bin, average='macro')
 
 
+def print_distribution(y, classes):
+    values, counts = np.unique(y, return_counts=True)
+    for clazz, count in zip(values, counts):
+        print("%s: %d,\t" % (classes[clazz], count), end='')
+    print('')
+
+
 if __name__ == '__main__':
     start_time = time()
 
@@ -85,8 +92,8 @@ if __name__ == '__main__':
             row = np.nan_to_num(np.array(row[4:(FEATURES+4 if FEATURES else None)]).astype(float))
             X.append(row)
     # Convert to numpy array
-    #X = np.asarray(X)
-    #y = np.array(y)
+    X = np.asarray(X)
+    y = np.array(y)
     # Remove irrelevant features - track_id,artist_name,title,duration
     #X = np.delete(X, [0, 1, 2, 8], 1)
     # One hot encode categorical variables - time_signature,key 2 e 3
@@ -101,15 +108,13 @@ if __name__ == '__main__':
     X_train, X_test, y_train, y_test = train_test_split(X, y_transformed, train_size=TRAIN_SIZE, stratify=y_transformed)
     print("Test set has %d samples" % len(y_test))
     print("Train set has %d samples" % len(y_train))
-    _, counts = np.unique(y_train, return_counts=True)
-    print(counts)
+    print_distribution(y_train, le.classes_)
 
     # Resample the train set
     resampler = combine.SMOTETomek(n_jobs=-1)
     X_train, y_train = resampler.fit_sample(X_train, y_train)
     print("Resampled train set has %d samples" % len(y_train))
-    _, counts = np.unique(y_train, return_counts=True)
-    print(counts)
+    print_distribution(y_train, le.classes_)
     # tribute to our biggest forest
     amazon = RandomForestClassifier(max_features="sqrt")
 
